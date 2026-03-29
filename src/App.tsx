@@ -243,8 +243,8 @@ export default function App() {
                       <Zap className="w-5 h-5 text-white" />
                     </div>
                     <div className="flex-1">
-                      <h4 className="text-sm font-bold text-gray-900 mb-1">خلاصه هوش مصنوعی</h4>
-                      <p className="text-xs text-gray-600">تحلیل ۲۴ ساعت گذشته</p>
+                      <h4 className="text-sm font-bold text-gray-900 mb-1">تحلیل هوش مصنوعی</h4>
+                      <p className="text-xs text-gray-600">بر مبنای شاخص‌های مرتبط</p>
                     </div>
                   </div>
                   
