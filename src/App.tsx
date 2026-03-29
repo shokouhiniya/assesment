@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Loader2, CheckCircle2, AlertCircle, Zap, Edit3, X, LogIn, Phone, Lock, Shield } from 'lucide-react';
+import { Loader2, CheckCircle2, AlertCircle, Zap, Edit3, X, LogIn, Phone, Lock, Shield, Info } from 'lucide-react';
 import { analyzeStatement, AnalysisResult } from './services/openRouterService';
 
 const ScoreCard = ({ score, indexName }: { score: number; indexName: string }) => {
@@ -64,6 +64,7 @@ export default function App() {
   const [results, setResults] = useState<AnalysisResult[] | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [showInfo, setShowInfo] = useState(false);
   
   // Correction modal states
   const [showModal, setShowModal] = useState(false);
@@ -173,7 +174,15 @@ export default function App() {
           <div className="inline-flex items-center justify-center mb-4">
             <img src="/HTNI-Logo.svg" alt="حزب تمدن نوین اسلامی" className="h-14" />
           </div>
-          <h1 className="text-2xl font-bold text-gray-900 mb-1">سنجش حاکمیت ملی بر ارز</h1>
+          <div className="flex items-center justify-center gap-2 mb-1">
+            <h1 className="text-2xl font-bold text-gray-900">سنجش حاکمیت ملی بر ارز</h1>
+            <button
+              onClick={() => setShowInfo(true)}
+              className="p-1.5 hover:bg-gray-100 rounded-lg transition-colors"
+            >
+              <Info className="w-5 h-5 text-[#41b1b1]" />
+            </button>
+          </div>
           <p className="text-sm text-gray-500">حزب تمدن نوین اسلامی</p>
         </div>
 
@@ -402,6 +411,104 @@ export default function App() {
                   <p className="text-sm text-gray-600">با تشکر از همکاری شما</p>
                 </div>
               )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Info Modal */}
+      {showInfo && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm" onClick={() => setShowInfo(false)}>
+          <div className="w-full max-w-2xl max-h-[90vh] bg-white rounded-3xl shadow-2xl overflow-hidden" onClick={(e) => e.stopPropagation()}>
+            <div className="sticky top-0 bg-white border-b border-gray-100 p-6 flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-[#41b1b1]/10 flex items-center justify-center">
+                  <Info className="w-5 h-5 text-[#41b1b1]" />
+                </div>
+                <h2 className="text-lg font-bold text-gray-900">درباره شاخص حاکمیت ملی بر ارز</h2>
+              </div>
+              <button 
+                onClick={() => setShowInfo(false)}
+                className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+              >
+                <X className="w-5 h-5 text-gray-500" />
+              </button>
+            </div>
+            
+            <div className="p-6 overflow-y-auto max-h-[calc(90vh-88px)] space-y-6">
+              <div className="space-y-4">
+                <div>
+                  <h3 className="text-base font-bold text-gray-900 mb-2">🎯 هدف</h3>
+                  <p className="text-sm text-gray-700 leading-relaxed">
+                    سنجش میزان پایبندی سیاستمداران به این اصل: «ارز حاصل از صادرات یک منبع ملی است و باید به کشور بازگردد، به‌صورت هدفمند تخصیص یابد، و با نرخ عادلانه مدیریت شود.»
+                  </p>
+                </div>
+
+                <div>
+                  <h3 className="text-base font-bold text-gray-900 mb-3">📊 سه شاخص اصلی</h3>
+                  <div className="space-y-3">
+                    <div className="p-4 bg-[#cd9d1e]/5 rounded-xl border border-[#cd9d1e]/20">
+                      <h4 className="text-sm font-bold text-gray-900 mb-2">۱. بازگشت ارز صادراتی (وزن: ۰.۴)</h4>
+                      <p className="text-xs text-gray-600 leading-relaxed mb-2">میزان حمایت از الزام بازگشت ارز به کشور</p>
+                      <ul className="text-xs text-gray-600 space-y-1 mr-4">
+                        <li>• نمره ۵: الزام کامل و بدون استثنا</li>
+                        <li>• نمره ۳: بازگشت جزئی یا مشروط</li>
+                        <li>• نمره ۰: رد کامل اصل بازگشت</li>
+                      </ul>
+                    </div>
+
+                    <div className="p-4 bg-[#41b1b1]/5 rounded-xl border border-[#41b1b1]/20">
+                      <h4 className="text-sm font-bold text-gray-900 mb-2">۲. تخصیص و توزیع ارز (وزن: ۰.۳)</h4>
+                      <p className="text-xs text-gray-600 leading-relaxed mb-2">نگاه به نقش دولت در توزیع ارز</p>
+                      <ul className="text-xs text-gray-600 space-y-1 mr-4">
+                        <li>• نمره ۵: تخصیص کامل توسط دولت</li>
+                        <li>• نمره ۳: مدل ترکیبی (دولت + بازار)</li>
+                        <li>• نمره ۰: رد کامل نقش دولت</li>
+                      </ul>
+                    </div>
+
+                    <div className="p-4 bg-[#5d3860]/5 rounded-xl border border-[#5d3860]/20">
+                      <h4 className="text-sm font-bold text-gray-900 mb-2">۳. عدالت در نرخ‌گذاری (وزن: ۰.۳)</h4>
+                      <p className="text-xs text-gray-600 leading-relaxed mb-2">نگاه به تعیین نرخ ارز</p>
+                      <ul className="text-xs text-gray-600 space-y-1 mr-4">
+                        <li>• نمره ۵: تعیین کامل توسط دولت</li>
+                        <li>• نمره ۳: شناور مدیریت‌شده</li>
+                        <li>• نمره ۰: بازار کاملاً آزاد</li>
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+
+                <div>
+                  <h3 className="text-base font-bold text-gray-900 mb-2">📋 اصول کدگذاری</h3>
+                  <div className="space-y-2">
+                    <div className="flex items-start gap-2">
+                      <div className="w-5 h-5 rounded-lg bg-[#348a3b]/10 flex items-center justify-center flex-shrink-0 mt-0.5">
+                        <span className="text-xs font-bold text-[#348a3b]">۱</span>
+                      </div>
+                      <div>
+                        <p className="text-sm font-semibold text-gray-900">فقط دلالت صریح</p>
+                        <p className="text-xs text-gray-600">تحلیل، کنایه و برداشت شخصی ممنوع</p>
+                      </div>
+                    </div>
+                    <div className="flex items-start gap-2">
+                      <div className="w-5 h-5 rounded-lg bg-[#348a3b]/10 flex items-center justify-center flex-shrink-0 mt-0.5">
+                        <span className="text-xs font-bold text-[#348a3b]">۲</span>
+                      </div>
+                      <div>
+                        <p className="text-sm font-semibold text-gray-900">عدم فرض نیت</p>
+                        <p className="text-xs text-gray-600">فقط متن صریح، نه حدس و گمان</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="p-4 bg-blue-50 rounded-xl border border-blue-100">
+                  <p className="text-xs text-blue-900 leading-relaxed">
+                    این ابزار با استفاده از هوش مصنوعی، گزاره‌های سیاستی را تحلیل و امتیازدهی می‌کند. نتایج برای بهبود دقت مدل، قابل اصلاح توسط کارشناسان مجاز است.
+                  </p>
+                </div>
+              </div>
             </div>
           </div>
         </div>
