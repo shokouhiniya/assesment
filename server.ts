@@ -3,6 +3,7 @@ import { createServer as createViteServer } from "vite";
 import path from "path";
 import { fileURLToPath } from "url";
 import dotenv from "dotenv";
+import { pool } from "./src/db.js";
 
 // Load environment variables
 dotenv.config({ path: '.env.local' });
@@ -29,22 +30,26 @@ async function startServer() {
     try {
       const { statement, indexName, originalScore, correctedScore, levelDefinition, logic, userId } = req.body;
       
-      // TODO: Save to database when connected
-      // For now, just log it
-      console.log('Correction received:', {
+      const query = `
+        INSERT INTO corrections (user_id, statement, index_name, original_score, corrected_score, level_definition, logic)
+        VALUES ($1, $2, $3, $4, $5, $6, $7)
+        RETURNING id, created_at
+      `;
+      
+      const result = await pool.query(query, [
+        userId,
         statement,
         indexName,
         originalScore,
         correctedScore,
         levelDefinition,
-        logic,
-        userId,
-        timestamp: new Date().toISOString()
-      });
+        logic
+      ]);
       
-      res.json({ success: true, message: 'تصحیح با موفقیت ثبت شد' });
+      console.log('✓ Correction saved:', result.rows[0]);
+      res.json({ success: true, message: 'تصحیح با موفقیت ثبت شد', data: result.rows[0] });
     } catch (error) {
-      console.error('Error saving correction:', error);
+      console.error('✗ Error saving correction:', error);
       res.status(500).json({ error: 'خطا در ثبت تصحیح' });
     }
   });

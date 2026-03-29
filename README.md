@@ -15,16 +15,23 @@
 
 ## Run Locally
 
-**Prerequisites:**  Node.js
+**Prerequisites:**  Node.js, PostgreSQL
 
 
 1. Install dependencies:
    `npm install`
-2. Create a `.env.local` file and set your `OPENROUTER_API_KEY`:
+2. Create a `.env.local` file with your configuration:
    ```
    OPENROUTER_API_KEY=your_openrouter_api_key_here
+   DB_HOST=localhost
+   DB_PORT=5432
+   DB_NAME=userdb
+   DB_USER=postgres
+   DB_PASSWORD=your_password
    ```
-3. Run the app:
+3. Run database migration:
+   `npm run migrate`
+4. Run the app:
    `npm run dev`
 
 ## OpenRouter Configuration
@@ -35,12 +42,18 @@ Default model: `google/gemini-2.5-flash` (you can change this in `src/services/o
 
 ## Database Setup for Corrections
 
-The correction feature requires a PostgreSQL database (from the `api` branch). 
+The correction feature saves user feedback to a PostgreSQL database for future AI model fine-tuning.
 
-To set up the corrections table, run the SQL in `corrections-migration.sql` on your database:
+### Setup Steps:
 
-```bash
-psql -U your_user -d your_database -f corrections-migration.sql
-```
+1. Make sure PostgreSQL is installed and running
+2. Create a database (or use existing one from `api` branch)
+3. Add database credentials to `.env.local`
+4. Run migration: `npm run migrate`
 
-The corrections are saved for future AI model fine-tuning and improvement.
+The corrections table stores:
+- Original AI score vs corrected score
+- User feedback on level definitions and logic
+- Timestamp and user ID for tracking
+
+This data will be used to improve the AI model's accuracy over time.
