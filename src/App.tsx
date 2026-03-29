@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Send, Loader2, CheckCircle2, AlertCircle, TrendingUp, FileText, BarChart3, Zap } from 'lucide-react';
+import { Send, Loader2, CheckCircle2, AlertCircle, Zap, Edit3, X, LogIn, Phone, Lock } from 'lucide-react';
 import { analyzeStatement, AnalysisResult } from './services/openRouterService';
 
 const ScoreCircle = ({ score }: { score: number }) => {
@@ -16,18 +16,9 @@ const ScoreCircle = ({ score }: { score: number }) => {
   return (
     <div className="relative w-20 h-20">
       <svg className="w-full h-full -rotate-90">
+        <circle cx="40" cy="40" r="36" stroke="#f8f5f0" strokeWidth="5" fill="none" />
         <circle
-          cx="40"
-          cy="40"
-          r="36"
-          stroke="#f8f5f0"
-          strokeWidth="5"
-          fill="none"
-        />
-        <circle
-          cx="40"
-          cy="40"
-          r="36"
+          cx="40" cy="40" r="36"
           stroke={getColor(score)}
           strokeWidth="5"
           fill="none"
@@ -50,6 +41,14 @@ export default function App() {
   const [results, setResults] = useState<AnalysisResult[] | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  
+  // Correction modal states
+  const [showModal, setShowModal] = useState(false);
+  const [authStep, setAuthStep] = useState<'login' | 'form' | 'success'>('login');
+  const [selectedResult, setSelectedResult] = useState<AnalysisResult | null>(null);
+  const [loginData, setLoginData] = useState({ phone: '', password: '' });
+  const [correctionData, setCorrectionData] = useState<AnalysisResult | null>(null);
+  const [submitting, setSubmitting] = useState(false);
 
   const handleAnalyze = async () => {
     if (!input.trim()) return;
@@ -64,6 +63,60 @@ export default function App() {
       setError('خطا در تحلیل. لطفاً دوباره تلاش کنید.');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleOpenCorrection = (res: AnalysisResult) => {
+    setSelectedResult(res);
+    setCorrectionData({ ...res });
+    setAuthStep('login');
+    setShowModal(true);
+  };
+
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSubmitting(true);
+    try {
+      const response = await fetch('/api/proxy/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          mobile: loginData.phone,
+          password: loginData.password,
+        }),
+      });
+      
+      const data = await response.json();
+      if (data.has_permission) {
+        setAuthStep('form');
+      } else {
+        alert('شما مجوز دسترسی ندارید یا اطلاعات ورود نادرست است.');
+      }
+    } catch (err) {
+      console.error(err);
+      alert('خطا در برقراری ارتباط با سرور.');
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const handleSubmitCorrection = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!correctionData) return;
+    setSubmitting(true);
+    try {
+      // TODO: Send correction to training API
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      setAuthStep('success');
+      setTimeout(() => {
+        setShowModal(false);
+        setAuthStep('login');
+        setLoginData({ phone: '', password: '' });
+      }, 2000);
+    } catch (err) {
+      alert('خطا در ثبت اطلاعات.');
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -169,13 +222,19 @@ export default function App() {
                       <p className="text-xs text-gray-800 leading-relaxed">{res.logic}</p>
                     </div>
                   </div>
+
+                  <button
+                    onClick={() => handleOpenCorrection(res)}
+                    className="w-full flex items-center justify-center gap-2 bg-gray-50 hover:bg-gray-100 text-gray-700 py-2.5 rounded-lg font-medium text-sm transition-all border border-gray-200"
+                  >
+                    <Edit3 className="w-4 h-4" />
+                    اصلاح ارزیابی
+                  </button>
                 </div>
               </div>
             ))}
           </div>
         )}
-
-
 
         {/* Footer */}
         <div className="mt-8 text-center">
@@ -184,6 +243,144 @@ export default function App() {
           </p>
         </div>
       </div>
+
+      {/* Correction Modal */}
+      {showModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm">
+          <div className="w-full max-w-md bg-white rounded-2xl shadow-2xl overflow-hidden">
+            <div className="p-6">
+              <div className="flex items-center justify-between mb-6">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-[#41b1b1]/10 flex items-center justify-center">
+                    <Edit3 className="w-5 h-5 text-[#41b1b1]" />
+                  </div>
+                  <h2 className="text-lg font-bold text-gray-900">اصلاح ارزیابی</h2>
+                </div>
+                <button 
+                  onClick={() => setShowModal(false)}
+                  className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                >
+                  <X className="w-5 h-5 text-gray-500" />
+                </button>
+              </div>
+
+              {authStep === 'login' && (
+                <form onSubmit={handleLogin} className="space-y-4">
+                  <p className="text-sm text-gray-600 mb-4">
+                    برای اصلاح ارزیابی، لطفاً وارد شوید
+                  </p>
+                  
+                  <div className="space-y-3">
+                    <div className="relative">
+                      <Phone className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                      <input
+                        type="text"
+                        required
+                        placeholder="شماره موبایل"
+                        value={loginData.phone}
+                        onChange={(e) => setLoginData({ ...loginData, phone: e.target.value })}
+                        className="w-full pr-10 pl-3 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:border-[#41b1b1] focus:ring-2 focus:ring-[#41b1b1]/10 transition-all outline-none text-sm"
+                      />
+                    </div>
+                    
+                    <div className="relative">
+                      <Lock className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                      <input
+                        type="password"
+                        required
+                        placeholder="رمز عبور"
+                        value={loginData.password}
+                        onChange={(e) => setLoginData({ ...loginData, password: e.target.value })}
+                        className="w-full pr-10 pl-3 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:border-[#41b1b1] focus:ring-2 focus:ring-[#41b1b1]/10 transition-all outline-none text-sm"
+                      />
+                    </div>
+                  </div>
+
+                  <button
+                    type="submit"
+                    disabled={submitting}
+                    className="w-full bg-gradient-to-r from-[#41b1b1] to-[#5d3860] text-white py-3 rounded-xl font-semibold hover:shadow-md transition-all flex items-center justify-center gap-2 disabled:opacity-50"
+                  >
+                    {submitting ? (
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                    ) : (
+                      <>
+                        <LogIn className="w-4 h-4" />
+                        <span className="text-sm">ورود</span>
+                      </>
+                    )}
+                  </button>
+                </form>
+              )}
+
+              {authStep === 'form' && correctionData && (
+                <form onSubmit={handleSubmitCorrection} className="space-y-4">
+                  <div className="space-y-3">
+                    <div>
+                      <label className="text-xs font-semibold text-gray-700 mb-2 block">نمره اصلاح شده (۰ تا ۵)</label>
+                      <input
+                        type="number"
+                        min="0"
+                        max="5"
+                        step="0.1"
+                        required
+                        value={correctionData.score}
+                        onChange={(e) => setCorrectionData({ ...correctionData, score: Number(e.target.value) })}
+                        className="w-full px-3 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:border-[#41b1b1] focus:ring-2 focus:ring-[#41b1b1]/10 transition-all outline-none text-sm"
+                      />
+                    </div>
+                    
+                    <div>
+                      <label className="text-xs font-semibold text-gray-700 mb-2 block">تعریف سطح انطباق</label>
+                      <textarea
+                        required
+                        value={correctionData.levelDefinition}
+                        onChange={(e) => setCorrectionData({ ...correctionData, levelDefinition: e.target.value })}
+                        className="w-full px-3 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:border-[#41b1b1] focus:ring-2 focus:ring-[#41b1b1]/10 transition-all outline-none text-sm h-20 resize-none"
+                      />
+                    </div>
+                    
+                    <div>
+                      <label className="text-xs font-semibold text-gray-700 mb-2 block">منطق ارزیابی</label>
+                      <textarea
+                        required
+                        value={correctionData.logic}
+                        onChange={(e) => setCorrectionData({ ...correctionData, logic: e.target.value })}
+                        className="w-full px-3 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:border-[#41b1b1] focus:ring-2 focus:ring-[#41b1b1]/10 transition-all outline-none text-sm h-20 resize-none"
+                      />
+                    </div>
+                  </div>
+
+                  <button
+                    type="submit"
+                    disabled={submitting}
+                    className="w-full bg-[#348a3b] text-white py-3 rounded-xl font-semibold hover:bg-[#2d7532] transition-all flex items-center justify-center gap-2 disabled:opacity-50"
+                  >
+                    {submitting ? (
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                    ) : (
+                      <>
+                        <CheckCircle2 className="w-4 h-4" />
+                        <span className="text-sm">ثبت تصحیح</span>
+                      </>
+                    )}
+                  </button>
+                </form>
+              )}
+
+              {authStep === 'success' && (
+                <div className="text-center py-8">
+                  <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-[#348a3b]/10 flex items-center justify-center">
+                    <CheckCircle2 className="w-8 h-8 text-[#348a3b]" />
+                  </div>
+                  <h3 className="text-lg font-bold text-gray-900 mb-2">تصحیح ثبت شد</h3>
+                  <p className="text-sm text-gray-600">با تشکر از همکاری شما</p>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
