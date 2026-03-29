@@ -1,36 +1,59 @@
 import React, { useState } from 'react';
-import { Send, Loader2, CheckCircle2, AlertCircle, Zap, Edit3, X, LogIn, Phone, Lock } from 'lucide-react';
+import { Loader2, CheckCircle2, AlertCircle, Zap, Edit3, X, LogIn, Phone, Lock, Shield } from 'lucide-react';
 import { analyzeStatement, AnalysisResult } from './services/openRouterService';
 
-const ScoreCircle = ({ score }: { score: number }) => {
+const ScoreCard = ({ score, indexName }: { score: number; indexName: string }) => {
   const percentage = (score / 5) * 100;
-  const circumference = 2 * Math.PI * 36;
+  const radius = 70;
+  const circumference = 2 * Math.PI * radius;
   const offset = circumference - (percentage / 100) * circumference;
   
   const getColor = (s: number) => {
-    if (s >= 4) return '#348a3b';
-    if (s >= 2.5) return '#41b1b1';
-    return '#7c2625';
+    if (s >= 4) return { main: '#cd9d1e', bg: '#fef9e7' };
+    if (s >= 2.5) return { main: '#41b1b1', bg: '#e8f6f6' };
+    return { main: '#d79727', bg: '#fef5e7' };
   };
 
+  const colors = getColor(score);
+
   return (
-    <div className="relative w-20 h-20">
-      <svg className="w-full h-full -rotate-90">
-        <circle cx="40" cy="40" r="36" stroke="#f8f5f0" strokeWidth="5" fill="none" />
-        <circle
-          cx="40" cy="40" r="36"
-          stroke={getColor(score)}
-          strokeWidth="5"
-          fill="none"
-          strokeDasharray={circumference}
-          strokeDashoffset={offset}
-          strokeLinecap="round"
-          style={{ transition: 'stroke-dashoffset 1s ease-out' }}
-        />
-      </svg>
-      <div className="absolute inset-0 flex flex-col items-center justify-center">
-        <span className="text-xl font-bold text-gray-900">{score}</span>
-        <span className="text-[9px] text-gray-500 font-medium">از ۵</span>
+    <div className="bg-white rounded-3xl p-8 shadow-sm border border-gray-100">
+      <div className="flex items-start justify-between mb-6">
+        <div>
+          <h3 className="text-lg font-bold text-gray-900 mb-1">{indexName}</h3>
+          <p className="text-xs text-gray-500">Regulation Health Index</p>
+        </div>
+        <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ backgroundColor: colors.bg }}>
+          <Shield className="w-5 h-5" style={{ color: colors.main }} />
+        </div>
+      </div>
+
+      <div className="flex items-center justify-center mb-6">
+        <div className="relative w-44 h-44">
+          <svg className="w-full h-full -rotate-90">
+            <circle cx="88" cy="88" r={radius} stroke="#f5f5f5" strokeWidth="12" fill="none" />
+            <circle
+              cx="88" cy="88" r={radius}
+              stroke={colors.main}
+              strokeWidth="12"
+              fill="none"
+              strokeDasharray={circumference}
+              strokeDashoffset={offset}
+              strokeLinecap="round"
+              style={{ transition: 'stroke-dashoffset 1.2s ease-out' }}
+            />
+          </svg>
+          <div className="absolute inset-0 flex flex-col items-center justify-center">
+            <span className="text-5xl font-bold text-gray-900">{score}</span>
+            <span className="text-sm text-gray-500 mt-1">از ۱۰۰</span>
+          </div>
+        </div>
+      </div>
+
+      <div className="flex justify-center">
+        <div className="inline-flex px-6 py-2 rounded-full text-sm font-bold" style={{ backgroundColor: colors.bg, color: colors.main }}>
+          وضعیت: متوسط
+        </div>
       </div>
     </div>
   );
@@ -49,6 +72,7 @@ export default function App() {
   const [loginData, setLoginData] = useState({ phone: '', password: '' });
   const [correctionData, setCorrectionData] = useState<AnalysisResult | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  const [userId, setUserId] = useState<number | null>(null);
 
   const handleAnalyze = async () => {
     if (!input.trim()) return;
@@ -88,6 +112,7 @@ export default function App() {
       
       const data = await response.json();
       if (data.has_permission) {
+        setUserId(data.id);
         setAuthStep('form');
       } else {
         alert('شما مجوز دسترسی ندارید یا اطلاعات ورود نادرست است.');
@@ -102,18 +127,35 @@ export default function App() {
 
   const handleSubmitCorrection = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!correctionData) return;
+    if (!correctionData || !selectedResult) return;
     setSubmitting(true);
     try {
-      // TODO: Send correction to training API
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      setAuthStep('success');
-      setTimeout(() => {
-        setShowModal(false);
-        setAuthStep('login');
-        setLoginData({ phone: '', password: '' });
-      }, 2000);
+      const response = await fetch('/api/corrections', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          statement: correctionData.statement,
+          indexName: correctionData.indexName,
+          originalScore: selectedResult.score,
+          correctedScore: correctionData.score,
+          levelDefinition: correctionData.levelDefinition,
+          logic: correctionData.logic,
+          userId: userId
+        }),
+      });
+      
+      if (response.ok) {
+        setAuthStep('success');
+        setTimeout(() => {
+          setShowModal(false);
+          setAuthStep('login');
+          setLoginData({ phone: '', password: '' });
+        }, 2000);
+      } else {
+        alert('خطا در ثبت تصحیح.');
+      }
     } catch (err) {
+      console.error(err);
       alert('خطا در ثبت اطلاعات.');
     } finally {
       setSubmitting(false);
@@ -123,45 +165,41 @@ export default function App() {
   const avgScore = results ? (results.reduce((acc, r) => acc + r.score, 0) / results.length).toFixed(1) : '0';
 
   return (
-    <div className="min-h-screen bg-[#f8f5f0] flex items-center justify-center p-4" dir="rtl">
-      <div className="w-full max-w-md">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-amber-50/20 flex items-center justify-center p-4" dir="rtl">
+      <div className="w-full max-w-lg">
         
         {/* Header */}
-        <div className="text-center mb-10">
+        <div className="text-center mb-8">
           <div className="inline-flex items-center justify-center mb-4">
-            <img src="/HTNI-Logo.svg" alt="حزب تمدن نوین اسلامی" className="h-16" />
+            <img src="/HTNI-Logo.svg" alt="حزب تمدن نوین اسلامی" className="h-14" />
           </div>
           <h1 className="text-2xl font-bold text-gray-900 mb-1">سنجش حاکمیت ملی بر ارز</h1>
-          <div className="flex items-center justify-center gap-2 text-sm text-gray-600">
-            <div className="w-1 h-1 rounded-full bg-[#41b1b1]" />
-            <span>حزب تمدن نوین اسلامی</span>
-            <div className="w-1 h-1 rounded-full bg-[#41b1b1]" />
-          </div>
+          <p className="text-sm text-gray-500">حزب تمدن نوین اسلامی</p>
         </div>
 
         {/* Input Card */}
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5 mb-5">
+        <div className="bg-white rounded-3xl shadow-sm border border-gray-100 p-6 mb-6">
           <textarea
             value={input}
             onChange={(e) => setInput(e.target.value)}
             placeholder="متن سخنرانی، مصاحبه یا موضع‌گیری را وارد کنید..."
-            className="w-full h-32 p-3 bg-gray-50/50 border border-gray-200 rounded-xl focus:border-[#41b1b1] focus:ring-2 focus:ring-[#41b1b1]/10 transition-all resize-none outline-none text-sm leading-relaxed placeholder:text-gray-400"
+            className="w-full h-36 p-4 bg-slate-50 border border-slate-200 rounded-2xl focus:border-[#41b1b1] focus:ring-2 focus:ring-[#41b1b1]/10 transition-all resize-none outline-none text-sm leading-relaxed placeholder:text-gray-400"
           />
           
           <button
             onClick={handleAnalyze}
             disabled={loading || !input.trim()}
-            className="w-full mt-3 flex items-center justify-center gap-2 bg-gradient-to-r from-[#41b1b1] to-[#5d3860] text-white py-3 rounded-xl font-semibold hover:shadow-md hover:shadow-[#41b1b1]/20 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full mt-4 flex items-center justify-center gap-2 bg-[#41b1b1] text-white py-3.5 rounded-2xl font-bold hover:bg-[#3a9d9d] hover:shadow-lg hover:shadow-[#41b1b1]/20 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {loading ? (
               <>
-                <Loader2 className="w-4 h-4 animate-spin" />
-                <span className="text-sm">در حال تحلیل...</span>
+                <Loader2 className="w-5 h-5 animate-spin" />
+                <span>در حال تحلیل...</span>
               </>
             ) : (
               <>
-                <Zap className="w-4 h-4" />
-                <span className="text-sm">تحلیل هوشمند</span>
+                <Zap className="w-5 h-5" />
+                <span>تحلیل هوشمند</span>
               </>
             )}
           </button>
@@ -169,63 +207,50 @@ export default function App() {
 
         {/* Error */}
         {error && (
-          <div className="bg-[#7c2625]/5 border border-[#7c2625]/20 text-[#7c2625] p-4 rounded-xl flex items-center gap-3 mb-5">
-            <AlertCircle className="w-4 h-4 flex-shrink-0" />
+          <div className="bg-rose-50 border border-rose-200 text-rose-700 p-4 rounded-2xl flex items-center gap-3 mb-6">
+            <AlertCircle className="w-5 h-5 flex-shrink-0" />
             <p className="text-sm font-medium">{error}</p>
           </div>
         )}
 
         {/* Results */}
         {results && results.length > 0 && (
-          <div className="space-y-4">
-            {/* Summary */}
-            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-xs text-gray-500 font-medium mb-1">میانگین نمره</p>
-                  <p className="text-3xl font-bold text-gray-900">{avgScore}</p>
-                  <p className="text-xs text-gray-400 mt-1">{results.length} شاخص ارزیابی شده</p>
-                </div>
-                <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-[#348a3b]/10 to-[#348a3b]/5 flex items-center justify-center">
-                  <CheckCircle2 className="w-6 h-6 text-[#348a3b]" />
-                </div>
-              </div>
-            </div>
-
-            {/* Analysis Cards */}
+          <div className="space-y-6">
             {results.map((res, idx) => (
-              <div key={idx} className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-                <div className="p-5 space-y-4">
-                  <div className="flex items-start justify-between gap-4">
+              <div key={idx}>
+                <ScoreCard score={res.score} indexName={res.indexName} />
+                
+                <div className="mt-4 bg-gradient-to-br from-cyan-50 to-blue-50 rounded-3xl p-6 shadow-sm border border-blue-100">
+                  <div className="flex items-start gap-3 mb-4">
+                    <div className="w-10 h-10 rounded-xl bg-[#41b1b1] flex items-center justify-center flex-shrink-0">
+                      <Zap className="w-5 h-5 text-white" />
+                    </div>
                     <div className="flex-1">
-                      <div className="inline-block px-2 py-0.5 bg-[#41b1b1]/10 text-[#41b1b1] text-[10px] font-bold rounded mb-2">
-                        شاخص {idx + 1}
-                      </div>
-                      <h3 className="text-base font-bold text-gray-900 leading-snug">{res.indexName}</h3>
+                      <h4 className="text-sm font-bold text-gray-900 mb-1">خلاصه هوش مصنوعی</h4>
+                      <p className="text-xs text-gray-600">تحلیل ۲۴ ساعت گذشته</p>
                     </div>
-                    <ScoreCircle score={res.score} />
                   </div>
-
-                  <div className="space-y-2.5">
-                    <div className="p-3 bg-gray-50 rounded-lg">
-                      <p className="text-[10px] text-gray-500 font-semibold mb-1.5 uppercase tracking-wide">گزاره</p>
-                      <p className="text-xs text-gray-700 leading-relaxed">{res.statement}</p>
+                  
+                  <div className="space-y-3">
+                    <div className="bg-white/60 backdrop-blur-sm rounded-xl p-4">
+                      <p className="text-xs text-gray-600 font-semibold mb-2">گزاره</p>
+                      <p className="text-sm text-gray-800 leading-relaxed">{res.statement}</p>
                     </div>
 
-                    <div className="p-3 bg-[#41b1b1]/5 rounded-lg">
-                      <p className="text-[10px] text-[#41b1b1] font-semibold mb-1.5 uppercase tracking-wide">سطح انطباق</p>
-                      <p className="text-xs text-gray-800 leading-relaxed">{res.levelDefinition}</p>
+                    <div className="bg-white/60 backdrop-blur-sm rounded-xl p-4">
+                      <p className="text-xs text-[#41b1b1] font-semibold mb-2">سطح انطباق</p>
+                      <p className="text-sm text-gray-800 leading-relaxed">{res.levelDefinition}</p>
                     </div>
 
-                    <div className="p-3 bg-[#5d3860]/5 rounded-lg">
-                      <p className="text-[10px] text-[#5d3860] font-semibold mb-1.5 uppercase tracking-wide">منطق ارزیابی</p>
-                      <p className="text-xs text-gray-800 leading-relaxed">{res.logic}</p>
+                    <div className="bg-white/60 backdrop-blur-sm rounded-xl p-4">
+                      <p className="text-xs text-[#5d3860] font-semibold mb-2">منطق ارزیابی</p>
+                      <p className="text-sm text-gray-800 leading-relaxed">{res.logic}</p>
                     </div>
                   </div>
 
                   <button
                     onClick={() => handleOpenCorrection(res)}
-                    className="w-full flex items-center justify-center gap-2 bg-gray-50 hover:bg-gray-100 text-gray-700 py-2.5 rounded-lg font-medium text-sm transition-all border border-gray-200"
+                    className="w-full mt-4 bg-[#41b1b1] text-white py-3 rounded-xl font-bold hover:bg-[#3a9d9d] transition-all flex items-center justify-center gap-2"
                   >
                     <Edit3 className="w-4 h-4" />
                     اصلاح ارزیابی
@@ -238,7 +263,7 @@ export default function App() {
 
         {/* Footer */}
         <div className="mt-8 text-center">
-          <p className="text-[10px] text-gray-400 font-medium">
+          <p className="text-xs text-gray-400">
             ابزار تحلیل سیاست‌های ارزی • حزب تمدن نوین اسلامی
           </p>
         </div>
@@ -246,8 +271,8 @@ export default function App() {
 
       {/* Correction Modal */}
       {showModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm">
-          <div className="w-full max-w-md bg-white rounded-2xl shadow-2xl overflow-hidden">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm" onClick={() => setShowModal(false)}>
+          <div className="w-full max-w-md bg-white rounded-3xl shadow-2xl overflow-hidden" onClick={(e) => e.stopPropagation()}>
             <div className="p-6">
               <div className="flex items-center justify-between mb-6">
                 <div className="flex items-center gap-3">
@@ -299,7 +324,7 @@ export default function App() {
                   <button
                     type="submit"
                     disabled={submitting}
-                    className="w-full bg-gradient-to-r from-[#41b1b1] to-[#5d3860] text-white py-3 rounded-xl font-semibold hover:shadow-md transition-all flex items-center justify-center gap-2 disabled:opacity-50"
+                    className="w-full bg-[#41b1b1] text-white py-3 rounded-xl font-bold hover:bg-[#3a9d9d] transition-all flex items-center justify-center gap-2 disabled:opacity-50"
                   >
                     {submitting ? (
                       <Loader2 className="w-4 h-4 animate-spin" />
@@ -313,7 +338,7 @@ export default function App() {
                 </form>
               )}
 
-              {authStep === 'form' && correctionData && (
+              {authStep === 'form' && correctionData && selectedResult && (
                 <form onSubmit={handleSubmitCorrection} className="space-y-4">
                   <div className="space-y-3">
                     <div>
@@ -354,7 +379,7 @@ export default function App() {
                   <button
                     type="submit"
                     disabled={submitting}
-                    className="w-full bg-[#348a3b] text-white py-3 rounded-xl font-semibold hover:bg-[#2d7532] transition-all flex items-center justify-center gap-2 disabled:opacity-50"
+                    className="w-full bg-[#348a3b] text-white py-3 rounded-xl font-bold hover:bg-[#2d7532] transition-all flex items-center justify-center gap-2 disabled:opacity-50"
                   >
                     {submitting ? (
                       <Loader2 className="w-4 h-4 animate-spin" />

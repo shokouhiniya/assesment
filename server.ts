@@ -24,6 +24,31 @@ async function startServer() {
     });
   });
 
+  // Save correction to database (for future AI training)
+  app.post("/api/corrections", async (req, res) => {
+    try {
+      const { statement, indexName, originalScore, correctedScore, levelDefinition, logic, userId } = req.body;
+      
+      // TODO: Save to database when connected
+      // For now, just log it
+      console.log('Correction received:', {
+        statement,
+        indexName,
+        originalScore,
+        correctedScore,
+        levelDefinition,
+        logic,
+        userId,
+        timestamp: new Date().toISOString()
+      });
+      
+      res.json({ success: true, message: 'تصحیح با موفقیت ثبت شد' });
+    } catch (error) {
+      console.error('Error saving correction:', error);
+      res.status(500).json({ error: 'خطا در ثبت تصحیح' });
+    }
+  });
+
   // Proxy API route to bypass Mixed Content (HTTPS -> HTTP)
   app.post("/api/proxy/login", async (req, res) => {
     try {

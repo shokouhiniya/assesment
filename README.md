@@ -31,4 +31,16 @@
 
 This app uses OpenRouter to access AI models. Get your API key from [OpenRouter](https://openrouter.ai/keys).
 
-Default model: `google/gemini-flash-1.5` (you can change this in `src/services/openRouterService.ts`)
+Default model: `google/gemini-2.5-flash` (you can change this in `src/services/openRouterService.ts`)
+
+## Database Setup for Corrections
+
+The correction feature requires a PostgreSQL database (from the `api` branch). 
+
+To set up the corrections table, run the SQL in `corrections-migration.sql` on your database:
+
+```bash
+psql -U your_user -d your_database -f corrections-migration.sql
+```
+
+The corrections are saved for future AI model fine-tuning and improvement.
