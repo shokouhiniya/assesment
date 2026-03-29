@@ -34,7 +34,7 @@ import {
   X
 } from 'lucide-react';
 
-import { analyzeStatement, AnalysisResult } from './services/geminiService';
+import { analyzeStatement, AnalysisResult } from './services/openRouterService';
 import { 
   BarChart, 
   Bar, 

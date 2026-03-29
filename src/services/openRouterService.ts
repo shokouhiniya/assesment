@@ -1,5 +1,3 @@
-import { GoogleGenAI, Type } from "@google/genai";
-
 const SYSTEM_INSTRUCTION = `
 You are an expert Policy Analyst AI specializing in "National Sovereignty over Foreign Exchange" (حاکمیت ملی بر ارز). 
 Your task is to analyze statements from politicians based on a specific coding manual.
@@ -57,19 +55,45 @@ export interface AnalysisResult {
 }
 
 export async function analyzeStatement(text: string): Promise<AnalysisResult[]> {
-  const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY || "" });
+  // Get API key from server
+  const configResponse = await fetch('/api/config');
+  const config = await configResponse.json();
   
-  const response = await ai.models.generateContent({
-    model: "gemini-3-flash-preview",
-    contents: text,
-    config: {
-      systemInstruction: SYSTEM_INSTRUCTION,
-      responseMimeType: "application/json",
+  const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${config.openRouterApiKey}`,
+      'Content-Type': 'application/json',
+      'HTTP-Referer': window.location.origin,
+      'X-Title': 'Policy Analysis Tool'
     },
+    body: JSON.stringify({
+      model: 'google/gemini-flash-1.5',
+      messages: [
+        {
+          role: 'system',
+          content: SYSTEM_INSTRUCTION
+        },
+        {
+          role: 'user',
+          content: text
+        }
+      ],
+      response_format: { type: 'json_object' }
+    })
   });
 
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    throw new Error(`OpenRouter API error: ${response.status} - ${errorData.error?.message || 'Unknown error'}`);
+  }
+
+  const data = await response.json();
+  const content = data.choices[0].message.content;
+
   try {
-    return JSON.parse(response.text);
+    const parsed = JSON.parse(content);
+    return Array.isArray(parsed) ? parsed : parsed.results || [];
   } catch (e) {
     console.error("Failed to parse AI response", e);
     throw new Error("AI response format error");

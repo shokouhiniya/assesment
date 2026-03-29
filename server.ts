@@ -2,6 +2,11 @@ import express from "express";
 import { createServer as createViteServer } from "vite";
 import path from "path";
 import { fileURLToPath } from "url";
+import dotenv from "dotenv";
+
+// Load environment variables
+dotenv.config({ path: '.env.local' });
+dotenv.config();
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -11,6 +16,13 @@ async function startServer() {
   const PORT = 3000;
 
   app.use(express.json());
+
+  // API endpoint to get OpenRouter API key
+  app.get("/api/config", (req, res) => {
+    res.json({
+      openRouterApiKey: process.env.OPENROUTER_API_KEY || ""
+    });
+  });
 
   // Proxy API route to bypass Mixed Content (HTTPS -> HTTP)
   app.post("/api/proxy/login", async (req, res) => {
