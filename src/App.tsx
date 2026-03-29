@@ -187,32 +187,40 @@ export default function App() {
         </div>
 
         {/* Input Card */}
-        <div className="bg-white rounded-3xl shadow-sm border border-gray-100 p-6 mb-6">
-          <textarea
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            placeholder="متن سخنرانی، مصاحبه یا موضع‌گیری را وارد کنید..."
-            className="w-full h-36 p-4 bg-slate-50 border border-slate-200 rounded-2xl focus:border-[#41b1b1] focus:ring-2 focus:ring-[#41b1b1]/10 transition-all resize-none outline-none text-sm leading-relaxed placeholder:text-gray-400"
-          />
-          
-          <button
-            onClick={handleAnalyze}
-            disabled={loading || !input.trim()}
-            className="w-full mt-4 flex items-center justify-center gap-2 bg-[#41b1b1] text-white py-3.5 rounded-2xl font-bold hover:bg-[#3a9d9d] hover:shadow-lg hover:shadow-[#41b1b1]/20 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            {loading ? (
-              <>
-                <Loader2 className="w-5 h-5 animate-spin" />
-                <span>در حال تحلیل...</span>
-              </>
-            ) : (
-              <>
-                <Zap className="w-5 h-5" />
-                <span>تحلیل هوشمند</span>
-              </>
-            )}
-          </button>
-        </div>
+        {!results ? (
+          <div className="bg-white rounded-3xl shadow-sm border border-gray-100 p-6 mb-6">
+            <textarea
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              placeholder="متن سخنرانی، مصاحبه یا موضع‌گیری را وارد کنید..."
+              className="w-full h-36 p-4 bg-slate-50 border border-slate-200 rounded-2xl focus:border-[#41b1b1] focus:ring-2 focus:ring-[#41b1b1]/10 transition-all resize-none outline-none text-sm leading-relaxed placeholder:text-gray-400"
+            />
+            
+            <button
+              onClick={handleAnalyze}
+              disabled={loading || !input.trim()}
+              className="w-full mt-4 flex items-center justify-center gap-2 bg-[#41b1b1] text-white py-3.5 rounded-2xl font-bold hover:bg-[#3a9d9d] hover:shadow-lg hover:shadow-[#41b1b1]/20 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {loading ? (
+                <>
+                  <Loader2 className="w-5 h-5 animate-spin" />
+                  <span>در حال تحلیل...</span>
+                </>
+              ) : (
+                <>
+                  <Zap className="w-5 h-5" />
+                  <span>تحلیل هوشمند</span>
+                </>
+              )}
+            </button>
+          </div>
+        ) : (
+          <div className="bg-gradient-to-br from-slate-50 to-slate-100 rounded-3xl shadow-sm border border-gray-200 p-6 mb-6">
+            <p className="text-base text-gray-800 leading-relaxed text-center">
+              «{input}»
+            </p>
+          </div>
+        )}
 
         {/* Error */}
         {error && (
