@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Loader2, CheckCircle2, AlertCircle, Zap, Edit3, X, LogIn, Phone, Lock, Shield, Info } from 'lucide-react';
+import { Loader2, CheckCircle2, AlertCircle, Zap, Edit3, X, LogIn, Phone, Lock, Shield, Info, BookOpen, FileText } from 'lucide-react';
 import { analyzeStatement, AnalysisResult } from './services/openRouterService';
 
 const ScoreCard = ({ score, indexName }: { score: number; indexName: string }) => {
@@ -65,6 +65,7 @@ export default function App() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [showInfo, setShowInfo] = useState(false);
+  const [showExamples, setShowExamples] = useState(false);
   
   // Correction modal states
   const [showModal, setShowModal] = useState(false);
@@ -188,31 +189,53 @@ export default function App() {
 
         {/* Input Card */}
         {!results ? (
-          <div className="bg-white rounded-3xl shadow-sm border border-gray-100 p-6 mb-6">
-            <textarea
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              placeholder="متن سخنرانی، مصاحبه یا موضع‌گیری را وارد کنید..."
-              className="w-full h-36 p-4 bg-slate-50 border border-slate-200 rounded-2xl focus:border-[#41b1b1] focus:ring-2 focus:ring-[#41b1b1]/10 transition-all resize-none outline-none text-sm leading-relaxed placeholder:text-gray-400"
-            />
-            
-            <button
-              onClick={handleAnalyze}
-              disabled={loading || !input.trim()}
-              className="w-full mt-4 flex items-center justify-center gap-2 bg-[#41b1b1] text-white py-3.5 rounded-2xl font-bold hover:bg-[#3a9d9d] hover:shadow-lg hover:shadow-[#41b1b1]/20 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {loading ? (
-                <>
-                  <Loader2 className="w-5 h-5 animate-spin" />
-                  <span>در حال تحلیل...</span>
-                </>
-              ) : (
-                <>
-                  <Zap className="w-5 h-5" />
-                  <span>تحلیل هوشمند</span>
-                </>
-              )}
-            </button>
+          <div className="space-y-3 mb-6">
+            <div className="bg-white rounded-3xl shadow-sm border border-gray-100 p-6">
+              <textarea
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                placeholder="متن سخنرانی، مصاحبه یا موضع‌گیری را وارد کنید..."
+                className="w-full h-36 p-4 bg-slate-50 border border-slate-200 rounded-2xl focus:border-[#41b1b1] focus:ring-2 focus:ring-[#41b1b1]/10 transition-all resize-none outline-none text-sm leading-relaxed placeholder:text-gray-400"
+              />
+              
+              <button
+                onClick={handleAnalyze}
+                disabled={loading || !input.trim()}
+                className="w-full mt-4 flex items-center justify-center gap-2 bg-[#41b1b1] text-white py-3.5 rounded-2xl font-bold hover:bg-[#3a9d9d] hover:shadow-lg hover:shadow-[#41b1b1]/20 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {loading ? (
+                  <>
+                    <Loader2 className="w-5 h-5 animate-spin" />
+                    <span>در حال تحلیل...</span>
+                  </>
+                ) : (
+                  <>
+                    <Zap className="w-5 h-5" />
+                    <span>تحلیل هوشمند</span>
+                  </>
+                )}
+              </button>
+            </div>
+
+            <div className="grid grid-cols-2 gap-3">
+              <a
+                href="https://htni.ir/fa/page/%DA%A9%D8%AA%D8%A7%D8%A8%DA%86%D9%87-%DA%A9%D8%AF%DA%AF%D8%B0%D8%A7%D8%B1%DB%8C-%D8%B4%D8%A7%D8%AE%D8%B5-%C2%AB%D8%AD%D8%A7%DA%A9%D9%85%DB%8C%D8%AA-%D9%85%D9%84%DB%8C-%D8%A8%D8%B1-%D8%A7%D8%B1%D8%B2%C2%BB"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center justify-center gap-2 bg-white border border-gray-200 text-gray-700 py-3 rounded-xl font-semibold hover:bg-gray-50 hover:border-[#41b1b1] transition-all"
+              >
+                <BookOpen className="w-4 h-4" />
+                <span className="text-sm">راهنمای ارزیابی</span>
+              </a>
+              
+              <button
+                onClick={() => setShowExamples(true)}
+                className="flex items-center justify-center gap-2 bg-white border border-gray-200 text-gray-700 py-3 rounded-xl font-semibold hover:bg-gray-50 hover:border-[#41b1b1] transition-all"
+              >
+                <FileText className="w-4 h-4" />
+                <span className="text-sm">مثال‌های ارزیابی</span>
+              </button>
+            </div>
           </div>
         ) : (
           <div className="bg-gradient-to-br from-slate-50 to-slate-100 rounded-3xl shadow-sm border border-gray-200 p-6 mb-6">
@@ -515,6 +538,129 @@ export default function App() {
                   <p className="text-xs text-blue-900 leading-relaxed">
                     این ابزار با استفاده از هوش مصنوعی، گزاره‌های سیاستی را تحلیل و امتیازدهی می‌کند. نتایج برای بهبود دقت مدل، قابل اصلاح توسط کارشناسان مجاز است.
                   </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Examples Modal */}
+      {showExamples && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm" onClick={() => setShowExamples(false)}>
+          <div className="w-full max-w-3xl max-h-[90vh] bg-white rounded-3xl shadow-2xl overflow-hidden" onClick={(e) => e.stopPropagation()}>
+            <div className="sticky top-0 bg-white border-b border-gray-100 p-6 flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-[#cd9d1e]/10 flex items-center justify-center">
+                  <FileText className="w-5 h-5 text-[#cd9d1e]" />
+                </div>
+                <h2 className="text-lg font-bold text-gray-900">مثال‌های ارزیابی</h2>
+              </div>
+              <button 
+                onClick={() => setShowExamples(false)}
+                className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+              >
+                <X className="w-5 h-5 text-gray-500" />
+              </button>
+            </div>
+            
+            <div className="p-6 overflow-y-auto max-h-[calc(90vh-88px)] space-y-8">
+              {/* Index 1 Examples */}
+              <div>
+                <h3 className="text-base font-bold text-gray-900 mb-4 flex items-center gap-2">
+                  <div className="w-6 h-6 rounded-lg bg-[#cd9d1e]/10 flex items-center justify-center">
+                    <span className="text-xs font-bold text-[#cd9d1e]">۱</span>
+                  </div>
+                  بازگشت ارز صادراتی
+                </h3>
+                <div className="space-y-3">
+                  {[
+                    { score: 5, def: 'الزام کامل و بدون استثنا', logic: 'تصریح به بازگشت ۱۰۰٪', text: 'تمام صادرکنندگان موظفند ارز حاصل از صادرات را به چرخه اقتصادی کشور بازگردانند و هیچ استثنایی پذیرفته نیست.' },
+                    { score: 4, def: 'الزام کامل با انعطاف اجرایی', logic: 'اصل الزام حفظ شده', text: 'بازگشت ارز ضروری است اما باید روش‌های آن را برای صادرکنندگان تسهیل کنیم.' },
+                    { score: 3, def: 'بازگشت نسبی', logic: 'بازگشت ناقص', text: 'صادرکننده باید بخشی از ارز را برگرداند و بخشی را برای واردات خود مصرف کند.' },
+                    { score: 2, def: 'غیرالزامی/مشوق‌محور', logic: 'مخالفت با اجبار', text: 'اگر صادرکنندگان را مجبور کنیم ارز را برگردانند، صادرات آسیب می‌بیند.' },
+                    { score: 1, def: 'مخالفت با الزام', logic: 'رد سیاست', text: 'الزام بازگشت ارز سیاست اشتباهی است و باید حذف شود.' },
+                    { score: 0, def: 'رد کامل اصل بازگشت', logic: 'نفی کامل حاکمیت', text: 'ارز صادراتی متعلق به صادرکننده است و دولت نباید دخالت کند.' }
+                  ].map((ex, i) => (
+                    <div key={i} className="bg-gradient-to-br from-slate-50 to-slate-100 rounded-xl p-4 border border-gray-200">
+                      <div className="flex items-start gap-3 mb-2">
+                        <div className="w-8 h-8 rounded-lg bg-[#cd9d1e] text-white flex items-center justify-center font-bold flex-shrink-0">
+                          {ex.score}
+                        </div>
+                        <div className="flex-1">
+                          <p className="text-xs font-bold text-[#41b1b1] mb-1">{ex.def}</p>
+                          <p className="text-xs text-gray-600 italic mb-2">{ex.logic}</p>
+                          <p className="text-sm text-gray-800 leading-relaxed">«{ex.text}»</p>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Index 2 Examples */}
+              <div>
+                <h3 className="text-base font-bold text-gray-900 mb-4 flex items-center gap-2">
+                  <div className="w-6 h-6 rounded-lg bg-[#41b1b1]/10 flex items-center justify-center">
+                    <span className="text-xs font-bold text-[#41b1b1]">۲</span>
+                  </div>
+                  تخصیص و توزیع ارز
+                </h3>
+                <div className="space-y-3">
+                  {[
+                    { score: 5, def: 'تخصیص کامل توسط دولت', logic: 'کنترل کامل دولت', text: 'منابع ارزی کشور باید صرفاً بر اساس اولویت‌های ملی و توسط دولت تخصیص یابد.' },
+                    { score: 4, def: 'دولت‌محور با ابزار مکمل', logic: 'نقش غالب دولت', text: 'دولت باید سیاست‌گذار اصلی باشد اما می‌توان از سازوکارهای بازار هم استفاده کرد.' },
+                    { score: 3, def: 'مدل ترکیبی', logic: 'تقسیم نقش', text: 'بخشی از ارز برای کالاهای اساسی توسط دولت تخصیص یابد و بقیه در بازار توزیع شود.' },
+                    { score: 2, def: 'نقش محدود دولت', logic: 'محدودسازی دولت', text: 'دولت فقط باید ارز کالاهای اساسی را تأمین کند و در بقیه موارد دخالت نکند.' },
+                    { score: 1, def: 'بازارمحور', logic: 'ترجیح بازار', text: 'فعالان اقتصادی بهتر از دولت می‌دانند ارز را کجا تخصیص دهند.' },
+                    { score: 0, def: 'حذف نقش دولت', logic: 'بازار آزاد کامل', text: 'تخصیص ارز باید کاملاً به بازار سپرده شود و دولت دخالت نکند.' }
+                  ].map((ex, i) => (
+                    <div key={i} className="bg-gradient-to-br from-slate-50 to-slate-100 rounded-xl p-4 border border-gray-200">
+                      <div className="flex items-start gap-3 mb-2">
+                        <div className="w-8 h-8 rounded-lg bg-[#41b1b1] text-white flex items-center justify-center font-bold flex-shrink-0">
+                          {ex.score}
+                        </div>
+                        <div className="flex-1">
+                          <p className="text-xs font-bold text-[#41b1b1] mb-1">{ex.def}</p>
+                          <p className="text-xs text-gray-600 italic mb-2">{ex.logic}</p>
+                          <p className="text-sm text-gray-800 leading-relaxed">«{ex.text}»</p>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Index 3 Examples */}
+              <div>
+                <h3 className="text-base font-bold text-gray-900 mb-4 flex items-center gap-2">
+                  <div className="w-6 h-6 rounded-lg bg-[#5d3860]/10 flex items-center justify-center">
+                    <span className="text-xs font-bold text-[#5d3860]">۳</span>
+                  </div>
+                  عدالت در نرخ‌گذاری
+                </h3>
+                <div className="space-y-3">
+                  {[
+                    { score: 5, def: 'تعیین کامل توسط دولت', logic: 'کنترل مستقیم', text: 'نرخ ارز باید توسط دولت و با در نظر گرفتن عدالت اقتصادی تعیین شود.' },
+                    { score: 4, def: 'مدیریت فعال دولت', logic: 'کنترل قوی', text: 'نرخ ارز باید مدیریت‌شده باشد تا صادرکننده و مصرف‌کننده هیچ یک آسیب نبینند.' },
+                    { score: 3, def: 'شناور مدیریت‌شده', logic: 'ترکیب بازار و دولت', text: 'نرخ ارز باید شناور باشد اما بانک مرکزی آن را کنترل کند.' },
+                    { score: 2, def: 'مداخله حداقلی', logic: 'نقش محدود دولت', text: 'نرخ ارز را بازار تعیین کند و دولت فقط در مواقع بحران دخالت کند.' },
+                    { score: 1, def: 'مخالفت با کنترل', logic: 'رد سیاست', text: 'هرگونه تعیین دستوری نرخ ارز اشتباه است.' },
+                    { score: 0, def: 'بازار آزاد کامل', logic: 'حذف کامل دولت', text: 'نرخ ارز باید کاملاً آزاد باشد و هیچ مداخله‌ای نباید صورت گیرد.' }
+                  ].map((ex, i) => (
+                    <div key={i} className="bg-gradient-to-br from-slate-50 to-slate-100 rounded-xl p-4 border border-gray-200">
+                      <div className="flex items-start gap-3 mb-2">
+                        <div className="w-8 h-8 rounded-lg bg-[#5d3860] text-white flex items-center justify-center font-bold flex-shrink-0">
+                          {ex.score}
+                        </div>
+                        <div className="flex-1">
+                          <p className="text-xs font-bold text-[#5d3860] mb-1">{ex.def}</p>
+                          <p className="text-xs text-gray-600 italic mb-2">{ex.logic}</p>
+                          <p className="text-sm text-gray-800 leading-relaxed">«{ex.text}»</p>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
                 </div>
               </div>
             </div>
