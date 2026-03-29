@@ -1,0 +1,11 @@
+# Coolify Configuration
+# این فایل برای Coolify است
+
+# Build Command (اختیاری)
+# npm install
+
+# Start Command
+# node server.js
+
+# Port
+# 3000

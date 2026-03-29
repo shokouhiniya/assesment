@@ -32,6 +32,32 @@ npm run migrate
 npm run dev
 ```
 
+## استقرار با Coolify
+
+### تنظیمات در Coolify:
+
+1. **نوع پروژه**: Docker Compose
+2. **Repository**: https://github.com/shokouhiniya/assesment.git
+3. **Branch**: main
+
+### متغیرهای محیطی (Environment Variables):
+
+در پنل Coolify این متغیرها رو اضافه کن:
+
+```
+DB_HOST=db
+DB_PORT=5432
+DB_NAME=userdb
+DB_USER=postgres
+DB_PASSWORD=[رمز عبور دلخواه]
+PORT=3000
+```
+
+### نکات مهم:
+- `DB_HOST` باید `db` باشه (نام سرویس در docker-compose)
+- Coolify به صورت خودکار دیتابیس PostgreSQL رو با docker-compose بالا میاره
+- پورت 3000 به صورت خودکار expose میشه
+
 ## API Endpoints
 
 ### دریافت همه کاربران
