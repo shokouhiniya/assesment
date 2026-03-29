@@ -573,7 +573,7 @@ export default function App() {
                   </div>
                   بازگشت ارز صادراتی
                 </h3>
-                <div className="space-y-3">
+                <div className="space-y-4">
                   {[
                     { score: 5, def: 'الزام کامل و بدون استثنا', logic: 'تصریح به بازگشت ۱۰۰٪', text: 'تمام صادرکنندگان موظفند ارز حاصل از صادرات را به چرخه اقتصادی کشور بازگردانند و هیچ استثنایی پذیرفته نیست.' },
                     { score: 4, def: 'الزام کامل با انعطاف اجرایی', logic: 'اصل الزام حفظ شده', text: 'بازگشت ارز ضروری است اما باید روش‌های آن را برای صادرکنندگان تسهیل کنیم.' },
@@ -582,15 +582,27 @@ export default function App() {
                     { score: 1, def: 'مخالفت با الزام', logic: 'رد سیاست', text: 'الزام بازگشت ارز سیاست اشتباهی است و باید حذف شود.' },
                     { score: 0, def: 'رد کامل اصل بازگشت', logic: 'نفی کامل حاکمیت', text: 'ارز صادراتی متعلق به صادرکننده است و دولت نباید دخالت کند.' }
                   ].map((ex, i) => (
-                    <div key={i} className="bg-gradient-to-br from-slate-50 to-slate-100 rounded-xl p-4 border border-gray-200">
-                      <div className="flex items-start gap-3 mb-2">
-                        <div className="w-8 h-8 rounded-lg bg-[#cd9d1e] text-white flex items-center justify-center font-bold flex-shrink-0">
-                          {ex.score}
+                    <div key={i} className="bg-white rounded-2xl p-5 border border-gray-200 shadow-sm hover:shadow-md transition-shadow">
+                      <p className="text-sm text-gray-800 leading-relaxed mb-4">
+                        «{ex.text}»
+                      </p>
+                      
+                      <div className="flex items-center justify-center mb-4">
+                        <div className="flex items-center gap-3 px-5 py-2 bg-gradient-to-r from-[#cd9d1e]/10 to-[#cd9d1e]/5 rounded-full border border-[#cd9d1e]/20">
+                          <span className="text-xs text-gray-600 font-medium">نمره:</span>
+                          <span className="text-2xl font-bold text-[#cd9d1e]">{ex.score}</span>
                         </div>
-                        <div className="flex-1">
-                          <p className="text-xs font-bold text-[#41b1b1] mb-1">{ex.def}</p>
-                          <p className="text-xs text-gray-600 italic mb-2">{ex.logic}</p>
-                          <p className="text-sm text-gray-800 leading-relaxed">«{ex.text}»</p>
+                      </div>
+
+                      <div className="space-y-2">
+                        <div className="p-3 bg-[#41b1b1]/5 rounded-xl border border-[#41b1b1]/20">
+                          <p className="text-[10px] text-[#41b1b1] font-bold mb-1 uppercase tracking-wide">تعریف سطح</p>
+                          <p className="text-xs text-gray-800">{ex.def}</p>
+                        </div>
+                        
+                        <div className="p-3 bg-[#5d3860]/5 rounded-xl border border-[#5d3860]/20">
+                          <p className="text-[10px] text-[#5d3860] font-bold mb-1 uppercase tracking-wide">منطق ارزیابی</p>
+                          <p className="text-xs text-gray-800">{ex.logic}</p>
                         </div>
                       </div>
                     </div>
@@ -606,7 +618,7 @@ export default function App() {
                   </div>
                   تخصیص و توزیع ارز
                 </h3>
-                <div className="space-y-3">
+                <div className="space-y-4">
                   {[
                     { score: 5, def: 'تخصیص کامل توسط دولت', logic: 'کنترل کامل دولت', text: 'منابع ارزی کشور باید صرفاً بر اساس اولویت‌های ملی و توسط دولت تخصیص یابد.' },
                     { score: 4, def: 'دولت‌محور با ابزار مکمل', logic: 'نقش غالب دولت', text: 'دولت باید سیاست‌گذار اصلی باشد اما می‌توان از سازوکارهای بازار هم استفاده کرد.' },
@@ -615,15 +627,27 @@ export default function App() {
                     { score: 1, def: 'بازارمحور', logic: 'ترجیح بازار', text: 'فعالان اقتصادی بهتر از دولت می‌دانند ارز را کجا تخصیص دهند.' },
                     { score: 0, def: 'حذف نقش دولت', logic: 'بازار آزاد کامل', text: 'تخصیص ارز باید کاملاً به بازار سپرده شود و دولت دخالت نکند.' }
                   ].map((ex, i) => (
-                    <div key={i} className="bg-gradient-to-br from-slate-50 to-slate-100 rounded-xl p-4 border border-gray-200">
-                      <div className="flex items-start gap-3 mb-2">
-                        <div className="w-8 h-8 rounded-lg bg-[#41b1b1] text-white flex items-center justify-center font-bold flex-shrink-0">
-                          {ex.score}
+                    <div key={i} className="bg-white rounded-2xl p-5 border border-gray-200 shadow-sm hover:shadow-md transition-shadow">
+                      <p className="text-sm text-gray-800 leading-relaxed mb-4">
+                        «{ex.text}»
+                      </p>
+                      
+                      <div className="flex items-center justify-center mb-4">
+                        <div className="flex items-center gap-3 px-5 py-2 bg-gradient-to-r from-[#41b1b1]/10 to-[#41b1b1]/5 rounded-full border border-[#41b1b1]/20">
+                          <span className="text-xs text-gray-600 font-medium">نمره:</span>
+                          <span className="text-2xl font-bold text-[#41b1b1]">{ex.score}</span>
                         </div>
-                        <div className="flex-1">
-                          <p className="text-xs font-bold text-[#41b1b1] mb-1">{ex.def}</p>
-                          <p className="text-xs text-gray-600 italic mb-2">{ex.logic}</p>
-                          <p className="text-sm text-gray-800 leading-relaxed">«{ex.text}»</p>
+                      </div>
+
+                      <div className="space-y-2">
+                        <div className="p-3 bg-[#41b1b1]/5 rounded-xl border border-[#41b1b1]/20">
+                          <p className="text-[10px] text-[#41b1b1] font-bold mb-1 uppercase tracking-wide">تعریف سطح</p>
+                          <p className="text-xs text-gray-800">{ex.def}</p>
+                        </div>
+                        
+                        <div className="p-3 bg-[#5d3860]/5 rounded-xl border border-[#5d3860]/20">
+                          <p className="text-[10px] text-[#5d3860] font-bold mb-1 uppercase tracking-wide">منطق ارزیابی</p>
+                          <p className="text-xs text-gray-800">{ex.logic}</p>
                         </div>
                       </div>
                     </div>
@@ -639,7 +663,7 @@ export default function App() {
                   </div>
                   عدالت در نرخ‌گذاری
                 </h3>
-                <div className="space-y-3">
+                <div className="space-y-4">
                   {[
                     { score: 5, def: 'تعیین کامل توسط دولت', logic: 'کنترل مستقیم', text: 'نرخ ارز باید توسط دولت و با در نظر گرفتن عدالت اقتصادی تعیین شود.' },
                     { score: 4, def: 'مدیریت فعال دولت', logic: 'کنترل قوی', text: 'نرخ ارز باید مدیریت‌شده باشد تا صادرکننده و مصرف‌کننده هیچ یک آسیب نبینند.' },
@@ -648,15 +672,27 @@ export default function App() {
                     { score: 1, def: 'مخالفت با کنترل', logic: 'رد سیاست', text: 'هرگونه تعیین دستوری نرخ ارز اشتباه است.' },
                     { score: 0, def: 'بازار آزاد کامل', logic: 'حذف کامل دولت', text: 'نرخ ارز باید کاملاً آزاد باشد و هیچ مداخله‌ای نباید صورت گیرد.' }
                   ].map((ex, i) => (
-                    <div key={i} className="bg-gradient-to-br from-slate-50 to-slate-100 rounded-xl p-4 border border-gray-200">
-                      <div className="flex items-start gap-3 mb-2">
-                        <div className="w-8 h-8 rounded-lg bg-[#5d3860] text-white flex items-center justify-center font-bold flex-shrink-0">
-                          {ex.score}
+                    <div key={i} className="bg-white rounded-2xl p-5 border border-gray-200 shadow-sm hover:shadow-md transition-shadow">
+                      <p className="text-sm text-gray-800 leading-relaxed mb-4">
+                        «{ex.text}»
+                      </p>
+                      
+                      <div className="flex items-center justify-center mb-4">
+                        <div className="flex items-center gap-3 px-5 py-2 bg-gradient-to-r from-[#5d3860]/10 to-[#5d3860]/5 rounded-full border border-[#5d3860]/20">
+                          <span className="text-xs text-gray-600 font-medium">نمره:</span>
+                          <span className="text-2xl font-bold text-[#5d3860]">{ex.score}</span>
                         </div>
-                        <div className="flex-1">
-                          <p className="text-xs font-bold text-[#5d3860] mb-1">{ex.def}</p>
-                          <p className="text-xs text-gray-600 italic mb-2">{ex.logic}</p>
-                          <p className="text-sm text-gray-800 leading-relaxed">«{ex.text}»</p>
+                      </div>
+
+                      <div className="space-y-2">
+                        <div className="p-3 bg-[#41b1b1]/5 rounded-xl border border-[#41b1b1]/20">
+                          <p className="text-[10px] text-[#41b1b1] font-bold mb-1 uppercase tracking-wide">تعریف سطح</p>
+                          <p className="text-xs text-gray-800">{ex.def}</p>
+                        </div>
+                        
+                        <div className="p-3 bg-[#5d3860]/5 rounded-xl border border-[#5d3860]/20">
+                          <p className="text-[10px] text-[#5d3860] font-bold mb-1 uppercase tracking-wide">منطق ارزیابی</p>
+                          <p className="text-xs text-gray-800">{ex.logic}</p>
                         </div>
                       </div>
                     </div>
