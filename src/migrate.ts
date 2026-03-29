@@ -1,6 +1,14 @@
 import { pool } from './db.js';
 
 const createCorrectionsTable = async () => {
+  console.log('DB Config:', {
+    host: process.env.DB_HOST,
+    port: process.env.DB_PORT,
+    database: process.env.DB_NAME,
+    user: process.env.DB_USER,
+    passwordLength: process.env.DB_PASSWORD?.length
+  });
+
   const query = `
     CREATE TABLE IF NOT EXISTS corrections (
       id SERIAL PRIMARY KEY,
@@ -21,9 +29,11 @@ const createCorrectionsTable = async () => {
   try {
     await pool.query(query);
     console.log('✓ جدول corrections با موفقیت ساخته شد');
+    await pool.end();
     process.exit(0);
   } catch (error) {
     console.error('✗ خطا در ساخت جدول:', error);
+    await pool.end();
     process.exit(1);
   }
 };
