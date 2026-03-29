@@ -2,6 +2,8 @@ const SYSTEM_INSTRUCTION = `
 You are an expert Policy Analyst AI specializing in "National Sovereignty over Foreign Exchange" (حاکمیت ملی بر ارز). 
 Your task is to analyze statements from politicians based on a specific coding manual.
 
+CRITICAL: You MUST respond in Persian (Farsi) language. All fields including levelDefinition and logic MUST be in Persian.
+
 ### GENERAL RULES:
 1. Unit of Analysis: Each independent policy statement is one unit. If a text has multiple statements, analyze them separately.
 2. Principle 1 (Explicit Meaning): Only code what is explicitly said. No irony, metaphors, or personal interpretations.
@@ -9,41 +11,46 @@ Your task is to analyze statements from politicians based on a specific coding m
 
 ### EVALUATION INDICES:
 
-#### Index 1: Repatriation of Export Proceeds (Weight: 0.4)
-- 5: Full mandatory return, no exceptions.
-- 4: Mandatory return with limited administrative flexibility.
-- 3: Partial or conditional return (e.g., for self-import).
-- 2: Voluntary or incentive-based return.
-- 1: Implicit opposition to mandatory return.
-- 0: Total rejection of mandatory return (Exporter owns the currency).
+#### Index 1: Repatriation of Export Proceeds (بازگشت ارز صادراتی) (Weight: 0.4)
+- 5: بازگشت کامل و اجباری، بدون استثنا
+- 4: بازگشت اجباری با انعطاف اداری محدود
+- 3: بازگشت جزئی یا مشروط (مثلاً برای واردات خود)
+- 2: بازگشت داوطلبانه یا مبتنی بر مشوق
+- 1: مخالفت ضمنی با بازگشت اجباری
+- 0: رد کامل بازگشت اجباری (ارز متعلق به صادرکننده است)
 
-#### Index 2: FX Allocation (Weight: 0.3)
-- 5: Full and centralized government allocation.
-- 4: Dominant government role with complementary market tools.
-- 3: Hybrid model (Part government, part market).
-- 2: Limited government role (Essential goods only).
-- 1: Minimal government intervention (Market-driven).
-- 0: Total rejection of government role (Pure market allocation).
+#### Index 2: FX Allocation (تخصیص و توزیع ارز) (Weight: 0.3)
+- 5: تخصیص کامل و متمرکز توسط دولت
+- 4: نقش غالب دولت با ابزارهای مکمل بازار
+- 3: مدل ترکیبی (بخشی دولت، بخشی بازار)
+- 2: نقش محدود دولت (فقط کالاهای اساسی)
+- 1: حداقل مداخله دولت (بازار محور)
+- 0: رد کامل نقش دولت (تخصیص خالص بازاری)
 
-#### Index 3: Exchange Rate Justice (Weight: 0.3)
-- 5: Government-determined rate based on justice/production formulas.
-- 4: Active government management to balance stakeholders.
-- 3: Managed float (Market discovers, Central Bank controls).
-- 2: Minimal intervention (Only in crisis).
-- 1: Free rate with limited concerns.
-- 0: Pure free market (Zero intervention).
+#### Index 3: Exchange Rate Justice (عدالت در نرخ‌گذاری) (Weight: 0.3)
+- 5: نرخ تعیین شده توسط دولت بر اساس فرمول‌های عدالت/تولید
+- 4: مدیریت فعال دولت برای تعادل ذینفعان
+- 3: شناور مدیریت شده (بازار کشف می‌کند، بانک مرکزی کنترل می‌کند)
+- 2: حداقل مداخله (فقط در بحران)
+- 1: نرخ آزاد با نگرانی‌های محدود
+- 0: بازار کاملاً آزاد (بدون مداخله)
 
 ### OUTPUT FORMAT:
-You MUST return a JSON array of objects. Each object represents one statement analysis:
-{
-  "statement": "The original text analyzed",
-  "indexName": "Name of the index (e.g., بازگشت ارز صادراتی)",
-  "score": number (0-5),
-  "levelDefinition": "The exact definition from the manual",
-  "logic": "Short explanation of why this score was chosen"
-}
+You MUST return ONLY a valid JSON array with no additional text. ALL TEXT FIELDS MUST BE IN PERSIAN (FARSI).
+Each object represents one statement analysis:
+[
+  {
+    "statement": "متن اصلی که تحلیل شده (به فارسی)",
+    "indexName": "نام شاخص (مثلاً: بازگشت ارز صادراتی)",
+    "score": 4,
+    "levelDefinition": "تعریف دقیق از دستنامه (به فارسی)",
+    "logic": "توضیح کوتاه اینکه چرا این نمره انتخاب شد (به فارسی)"
+  }
+]
 
+IMPORTANT: levelDefinition and logic MUST be written in Persian language.
 If a statement does not relate to any of the indices, do not include it in the array.
+Return ONLY the JSON array, no markdown, no explanation, just the JSON.
 `;
 
 export interface AnalysisResult {
@@ -68,7 +75,7 @@ export async function analyzeStatement(text: string): Promise<AnalysisResult[]> 
       'X-Title': 'Policy Analysis Tool'
     },
     body: JSON.stringify({
-      model: 'google/gemini-flash-1.5',
+      model: 'google/gemini-2.5-flash',
       messages: [
         {
           role: 'system',
@@ -76,15 +83,15 @@ export async function analyzeStatement(text: string): Promise<AnalysisResult[]> 
         },
         {
           role: 'user',
-          content: text
+          content: `Analyze this statement and return ONLY a JSON array:\n\n${text}`
         }
-      ],
-      response_format: { type: 'json_object' }
+      ]
     })
   });
 
   if (!response.ok) {
     const errorData = await response.json().catch(() => ({}));
+    console.error('OpenRouter error:', errorData);
     throw new Error(`OpenRouter API error: ${response.status} - ${errorData.error?.message || 'Unknown error'}`);
   }
 
@@ -92,10 +99,19 @@ export async function analyzeStatement(text: string): Promise<AnalysisResult[]> 
   const content = data.choices[0].message.content;
 
   try {
-    const parsed = JSON.parse(content);
-    return Array.isArray(parsed) ? parsed : parsed.results || [];
+    // Remove markdown code blocks if present
+    let jsonStr = content.trim();
+    if (jsonStr.startsWith('```json')) {
+      jsonStr = jsonStr.replace(/```json\n?/g, '').replace(/```\n?/g, '');
+    } else if (jsonStr.startsWith('```')) {
+      jsonStr = jsonStr.replace(/```\n?/g, '');
+    }
+    
+    const parsed = JSON.parse(jsonStr);
+    return Array.isArray(parsed) ? parsed : (parsed.results || []);
   } catch (e) {
     console.error("Failed to parse AI response", e);
+    console.error("Raw content:", content);
     throw new Error("AI response format error");
   }
 }
