@@ -45,7 +45,7 @@ const ScoreCard = ({ score, indexName }: { score: number; indexName: string }) =
           </svg>
           <div className="absolute inset-0 flex flex-col items-center justify-center">
             <span className="text-5xl font-bold text-gray-900">{score}</span>
-            <span className="text-sm text-gray-500 mt-1">از ۱۰۰</span>
+            <span className="text-sm text-gray-500 mt-1">از ۵</span>
           </div>
         </div>
       </div>
