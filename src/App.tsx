@@ -75,8 +75,8 @@ export default function App() {
         
         {/* Header */}
         <div className="text-center mb-10">
-          <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-br from-[#41b1b1] to-[#5d3860] mb-4 shadow-lg shadow-[#41b1b1]/20">
-            <BarChart3 className="w-8 h-8 text-white" strokeWidth={1.5} />
+          <div className="inline-flex items-center justify-center mb-4">
+            <img src="/HTNI-Logo.svg" alt="حزب تمدن نوین اسلامی" className="h-16" />
           </div>
           <h1 className="text-2xl font-bold text-gray-900 mb-1">سنجش حاکمیت ملی بر ارز</h1>
           <div className="flex items-center justify-center gap-2 text-sm text-gray-600">
@@ -175,15 +175,7 @@ export default function App() {
           </div>
         )}
 
-        {/* Empty State */}
-        {!results && !loading && !error && (
-          <div className="bg-white/60 backdrop-blur-sm border-2 border-dashed border-gray-200 rounded-2xl p-10 text-center">
-            <div className="w-12 h-12 mx-auto mb-3 rounded-xl bg-gray-100 flex items-center justify-center">
-              <FileText className="w-6 h-6 text-gray-400" strokeWidth={1.5} />
-            </div>
-            <p className="text-sm text-gray-500 font-medium">متن خود را وارد کنید</p>
-          </div>
-        )}
+
 
         {/* Footer */}
         <div className="mt-8 text-center">
