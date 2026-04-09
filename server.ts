@@ -120,22 +120,28 @@ CRITICAL: You MUST respond in Persian (Farsi) language.
     }
   });
 
-  // Proxy API route to bypass Mixed Content (HTTPS -> HTTP)
+  // Login endpoint - directly query database
   app.post("/api/proxy/login", async (req, res) => {
     try {
-      const response = await fetch('http://f480g0cwgoowgcwwgo8kscwc.46.225.75.168.sslip.io/api/login', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(req.body),
-      });
-      
-      const data = await response.json();
-      res.status(response.status).json(data);
+      const { mobile, password } = req.body;
+
+      if (!mobile || !password) {
+        return res.status(400).json({ error: 'موبایل و رمز عبور الزامی است', has_permission: false });
+      }
+
+      const result = await pool.query(
+        'SELECT id, has_permission FROM users WHERE mobile = $1 AND password = $2',
+        [mobile, password]
+      );
+
+      if (result.rows.length === 0) {
+        return res.status(401).json({ error: 'موبایل یا رمز عبور اشتباه است', has_permission: false });
+      }
+
+      res.json({ id: result.rows[0].id, has_permission: result.rows[0].has_permission });
     } catch (error) {
-      console.error('Proxy error:', error);
-      res.status(500).json({ error: 'Failed to fetch from external API' });
+      console.error('Login error:', error);
+      res.status(500).json({ error: 'خطا در ارتباط با سرور', has_permission: false });
     }
   });
 
