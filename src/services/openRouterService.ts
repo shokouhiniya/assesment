@@ -62,56 +62,17 @@ export interface AnalysisResult {
 }
 
 export async function analyzeStatement(text: string): Promise<AnalysisResult[]> {
-  // Get API key from server
-  const configResponse = await fetch('/api/config');
-  const config = await configResponse.json();
-  
-  const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+  const response = await fetch('/api/analyze', {
     method: 'POST',
-    headers: {
-      'Authorization': `Bearer ${config.openRouterApiKey}`,
-      'Content-Type': 'application/json',
-      'HTTP-Referer': window.location.origin,
-      'X-Title': 'Policy Analysis Tool'
-    },
-    body: JSON.stringify({
-      model: 'google/gemini-2.5-flash',
-      messages: [
-        {
-          role: 'system',
-          content: SYSTEM_INSTRUCTION
-        },
-        {
-          role: 'user',
-          content: `Analyze this statement and return ONLY a JSON array:\n\n${text}`
-        }
-      ]
-    })
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ text })
   });
 
   if (!response.ok) {
     const errorData = await response.json().catch(() => ({}));
-    console.error('OpenRouter error:', errorData);
-    throw new Error(`OpenRouter API error: ${response.status} - ${errorData.error?.message || 'Unknown error'}`);
+    throw new Error(errorData.error || 'خطا در تحلیل');
   }
 
   const data = await response.json();
-  const content = data.choices[0].message.content;
-
-  try {
-    // Remove markdown code blocks if present
-    let jsonStr = content.trim();
-    if (jsonStr.startsWith('```json')) {
-      jsonStr = jsonStr.replace(/```json\n?/g, '').replace(/```\n?/g, '');
-    } else if (jsonStr.startsWith('```')) {
-      jsonStr = jsonStr.replace(/```\n?/g, '');
-    }
-    
-    const parsed = JSON.parse(jsonStr);
-    return Array.isArray(parsed) ? parsed : (parsed.results || []);
-  } catch (e) {
-    console.error("Failed to parse AI response", e);
-    console.error("Raw content:", content);
-    throw new Error("AI response format error");
-  }
+  return data.results;
 }
